@@ -12,12 +12,13 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
 
 # standard library imports
+from datetime import datetime
 import json
 
 # third party imports
@@ -114,6 +115,13 @@ def purchase_places():
     places_remaining = int(competition['numberOfPlaces'])
     if places_required > int(club['points']):
         flash('Error: you do not have enough points')
+        return render_template(
+            'booking.html',
+            club=club,
+            competition=competition
+        )
+    elif datetime.now() > datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S'):  # noqa
+        flash("Error: you can't book a place for past competitions")
         return render_template(
             'booking.html',
             club=club,
