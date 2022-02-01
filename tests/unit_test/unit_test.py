@@ -13,13 +13,12 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
 
 # standard library imports
-from datetime import datetime
 
 # third party imports
 
@@ -146,27 +145,6 @@ class TestShowSummary():
         assert response.status_code == 200
         assert ("GUDLFT Registration") in response.data.decode()
 
-    def test_competition_list(self, client):
-        """
-        Test that the competition list is correctly is loaded.
-        We know that the list is correctly loaded because
-        the competition name can be found in the list of competitions
-        We use datetime to determine if the competition is in the past
-        or not.
-        If it is in the past, it is not displayed in the list
-        """
-
-        email = server.load_clubs()[0]['email']
-
-        competition = server.load_competitions()
-        response = client.post('/showSummary', data={'email': email})
-
-        for competition in competition:
-            if datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S') > datetime.now():  # noqa
-                assert competition['date'] in response.data.decode()
-            else:
-                assert competition['date'] not in response.data.decode()
-
 
 class TestBook():
 
@@ -177,7 +155,7 @@ class TestBook():
         We also know that the page has the right template because
         the page has the title booking for"""
 
-        competition_name = server.load_competitions()[0]['name']
+        competition_name = server.load_competitions()[1]['name']
         club_name = server.load_clubs()[0]['name']
         response = client.get('/book/' + competition_name + '/' + club_name)
         assert response.status_code == 200
@@ -190,28 +168,13 @@ class TestBook():
         the club name is displayed and the places are displayed
         """
 
-        competition_name = server.load_competitions()[0]['name']
+        competition_name = server.load_competitions()[1]['name']
         club_name = server.load_clubs()[0]['name']
         response = client.get('/book/' + competition_name + '/' + club_name)
         data = response.data.decode()
-        assert ("Spring Festival") in data
-        assert ("Places available: 25") in data
+        assert ("Future Competition") in data
+        assert ("Places available: 13") in data
         assert ("How many places") in data
-
-    def test_hp_post_book_no_booking_for_past_competition(self, client):
-        """
-        Test that the page does not allow booking for past competitions
-        we know that because the page is correct
-        because the error message is displayed and the great booking message
-        is not displayed
-        """
-
-        past_competition_name = server.load_competitions()[0]['name']
-        club_name = server.load_clubs()[0]['name']
-        r = client.get('/book/' + past_competition_name + '/' + club_name)
-        data = r.data.decode()
-        assert ("Error: you can't book a place for past competitions") in data
-        assert ("Great-booking complete!") not in data
 
     def test_sp_post_if_club_does_not_exist(self, client):
         """
@@ -234,13 +197,36 @@ class TestBook():
 
 class TestPurchasePlaces():
 
+    def test_hp_post_book_no_booking_for_past_competition(self, client):
+        """
+        Test that the page does not allow booking for past competitions
+        we know that because the page is correct
+        because the error message is displayed and the great booking message
+        is not displayed
+        """
+
+        past_competition_name = server.load_competitions()[0]['name']
+        club_name = server.load_clubs()[0]['name']
+
+        response = client.post(
+            '/purchasePlaces',
+            data={
+                'competition': past_competition_name,
+                'club': club_name,
+                'places': 1
+            }
+        )
+        data = response.data.decode()
+        assert ("Error: you can't book a place for past competitions") in data
+        assert ("Great-booking complete!") not in data
+
     def test_sp_book_too_many_places(self, client):
         """
         Test that the user cannot book more than 12 places
         we can now that because the page contains the error message
         Error: you cannot book more than 12 places
         """
-        competition_name = server.load_competitions()[0]['name']
+        competition_name = server.load_competitions()[1]['name']
         club_name = server.load_clubs()[0]['name']
 
         response = client.post(
@@ -297,9 +283,9 @@ class TestPurchasePlaces():
         Error: you do not have enough points
         """
 
-        competition_name = server.load_competitions()[0]['name']
-        club_name = server.load_clubs()[0]['name']
-        club_points = int(server.load_clubs()[0]['points']) + 1
+        competition_name = server.load_competitions()[1]['name']
+        club_name = server.load_clubs()[1]['name']
+        club_points = int(server.load_clubs()[1]['points']) + 1
 
         response = client.post(
             '/purchasePlaces',
@@ -313,7 +299,7 @@ class TestPurchasePlaces():
         assert ("Error: you do not have enough points") in response.data.decode()  # noqa
 
     def test_hp_book_succeeded_points_are_deducted(self, client):
-        competition_name = server.load_competitions()[0]['name']
+        competition_name = server.load_competitions()[1]['name']
         club_name = server.load_clubs()[0]['name']
         club_points = int(server.load_clubs()[0]['points'])
 
