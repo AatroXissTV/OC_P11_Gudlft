@@ -13,7 +13,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.2"
+__version__ = "0.2.4"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -148,48 +148,54 @@ class TestShowSummary():
 
 class TestBook():
 
-    def test_status_code_200_template(self, client):
+    def test_status_code_200_template(self, client, testing_data):
         """
         Test that the page is loaded correctly
         we know that because the page has the status code 200.
         We also know that the page has the right template because
         the page has the title booking for"""
 
-        competition_name = server.load_competitions()[1]['name']
-        club_name = server.load_clubs()[0]['name']
+        competition_name = testing_data['competitions'][0]['name']
+        club_name = testing_data['clubs'][0]['name']
         response = client.get('/book/' + competition_name + '/' + club_name)
         assert response.status_code == 200
         assert ("Booking for " + competition_name) in response.data.decode()
 
-    def test_hp_book_should_return_expected_content(self, client):
+    def test_hp_book_should_return_expected_content(self, client, testing_data):  # noqa
         """
         Test that the page returns the right content
         we know that because the page has the right content because
         the club name is displayed and the places are displayed
         """
 
-        competition_name = server.load_competitions()[1]['name']
-        club_name = server.load_clubs()[0]['name']
+        competition_name = testing_data['competitions'][0]['name']
+        club_name = testing_data['clubs'][0]['name']
         response = client.get('/book/' + competition_name + '/' + club_name)
         data = response.data.decode()
-        assert ("Future Competition") in data
-        assert ("Places available: 13") in data
+        assert ("Past Competition") in data
+        assert ("Places available: 25") in data
         assert ("How many places") in data
 
-    def test_sp_post_if_club_does_not_exist(self, client):
+    def test_sp_post_if_club_does_not_exist(self, client, testing_data):
         """
+        Test that the page returns the right content
+        when the club does not exist
         """
-        competition_name = server.load_competitions()[0]['name']
+
+        competition_name = testing_data['competitions'][0]['name']
         club_name = WRONG_CLUB
         response = client.get('/book/' + competition_name + '/' + club_name)
         data = response.data.decode()
         assert ("Something went wrong-please try again") in data
 
-    def test_sp_post_if_competition_does_not_exist(self, client):
+    def test_sp_post_if_competition_does_not_exist(self, client, testing_data):
         """
+        Test that the page returns the right content
+        when the competition does not exist
         """
+
         competition_name = WRONG_COMPETITION
-        club_name = server.load_clubs()[0]['name']
+        club_name = testing_data['clubs'][0]['name']
         response = client.get('/book/' + competition_name + '/' + club_name)
         data = response.data.decode()
         assert ("Something went wrong-please try again") in data
@@ -197,7 +203,7 @@ class TestBook():
 
 class TestPurchasePlaces():
 
-    def test_hp_post_book_no_booking_for_past_competition(self, client):
+    def test_hp_post_book_no_booking_for_past_competition(self, client, testing_data):  # noqa
         """
         Test that the page does not allow booking for past competitions
         we know that because the page is correct
@@ -205,29 +211,30 @@ class TestPurchasePlaces():
         is not displayed
         """
 
-        past_competition_name = server.load_competitions()[0]['name']
-        club_name = server.load_clubs()[0]['name']
+        past_competition = testing_data['competitions'][0]['name']
+        club_name = testing_data['clubs'][0]['name']
 
         response = client.post(
             '/purchasePlaces',
             data={
-                'competition': past_competition_name,
-                'club': club_name,
-                'places': 1
+                'places': '13',
+                'competition': past_competition,
+                'club': club_name
             }
         )
         data = response.data.decode()
-        assert ("Error: you can't book a place for past competitions") in data
+        assert ('Error: you can not book a place for past competitions') in data  # noqa
         assert ("Great-booking complete!") not in data
 
-    def test_sp_book_too_many_places(self, client):
+    def test_sp_book_too_many_places(self, client, testing_data):
         """
         Test that the user cannot book more than 12 places
         we can now that because the page contains the error message
         Error: you cannot book more than 12 places
         """
-        competition_name = server.load_competitions()[1]['name']
-        club_name = server.load_clubs()[0]['name']
+
+        competition_name = testing_data['competitions'][1]['name']
+        club_name = testing_data['clubs'][0]['name']
 
         response = client.post(
             '/purchasePlaces',
@@ -240,7 +247,7 @@ class TestPurchasePlaces():
         assert response.status_code == 200
         assert ("Error: you cannot book more than 12 places") in response.data.decode()  # noqa
 
-    def test_sp_book_no_places_available(self, client):
+    def test_sp_book_no_places_available(self, client, testing_data):
         """
         Test  that a user cannot book more than the number
         of places available in the competition.
@@ -250,9 +257,9 @@ class TestPurchasePlaces():
         Error: there are no places available
         """
 
-        competition_name = server.load_competitions()[1]['name']
-        club_name = server.load_clubs()[0]['name']
-        club_name2 = server.load_clubs()[1]['name']
+        competition_name = testing_data['competitions'][1]['name']
+        club_name = testing_data['clubs'][0]['name']
+        club_name2 = testing_data['clubs'][1]['name']
 
         client.post(
             '/purchasePlaces',
@@ -274,7 +281,7 @@ class TestPurchasePlaces():
         assert response.status_code == 200
         assert ("Error: there are not enough places available") in response.data.decode()  # noqa
 
-    def test_sp_book_no_enough_points(self, client):
+    def test_sp_book_no_enough_points(self, client, testing_data):
         """
         Test that makes sure that a user cannot book a competition
         if they do not have enough points.
@@ -283,9 +290,9 @@ class TestPurchasePlaces():
         Error: you do not have enough points
         """
 
-        competition_name = server.load_competitions()[1]['name']
-        club_name = server.load_clubs()[1]['name']
-        club_points = int(server.load_clubs()[1]['points']) + 1
+        competition_name = testing_data['competitions'][1]['name']
+        club_name = testing_data['clubs'][0]['name']
+        club_points = int(testing_data['clubs'][0]['points']) + 1
 
         response = client.post(
             '/purchasePlaces',
@@ -298,10 +305,10 @@ class TestPurchasePlaces():
         assert response.status_code == 200
         assert ("Error: you do not have enough points") in response.data.decode()  # noqa
 
-    def test_hp_book_succeeded_points_are_deducted(self, client):
-        competition_name = server.load_competitions()[1]['name']
-        club_name = server.load_clubs()[0]['name']
-        club_points = int(server.load_clubs()[0]['points'])
+    def test_hp_book_succeeded_points_are_deducted(self, client, testing_data):
+        competition_name = testing_data['competitions'][1]['name']
+        club_name = testing_data['clubs'][0]['name']
+        club_points = int(testing_data['clubs'][0]['points'])
 
         response = client.post(
             '/purchasePlaces',

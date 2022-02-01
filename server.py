@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.1"
+__version__ = "0.2.4"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -36,25 +36,27 @@ from flask import (
 # other imports
 
 # constants
+PATH_CLUBS = 'clubs.json'
+PATH_COMPETITIONS = 'competitions.json'
 
 
 def load_clubs():
-    with open('clubs.json') as c:
+    with open(PATH_CLUBS) as c:
         list_of_clubs = json.load(c)['clubs']
         return list_of_clubs
 
 
 def load_competitions():
-    with open('competitions.json') as comps:
+    with open(PATH_COMPETITIONS) as comps:
         list_of_competitions = json.load(comps)['competitions']
         return list_of_competitions
 
 
-app = Flask(__name__)
-app.secret_key = 'something_special'
-
 competitions = load_competitions()
 clubs = load_clubs()
+
+app = Flask(__name__)
+app.secret_key = 'something_special'
 
 
 @app.route('/')
@@ -121,7 +123,7 @@ def purchase_places():
             competition=competition
         )
     elif datetime.now() > datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S'):  # noqa
-        flash("Error: you can't book a place for past competitions")
+        flash('Error: you can not book a place for past competitions')
         return render_template(
             'booking.html',
             club=club,
