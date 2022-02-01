@@ -13,7 +13,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -186,7 +186,8 @@ class TestBook():
         club_name = WRONG_CLUB
         response = client.get('/book/' + competition_name + '/' + club_name)
         data = response.data.decode()
-        assert ("Something went wrong-please try again") in data
+        assert response.status_code == 200
+        assert ("Error: club not found") in data
 
     def test_sp_post_if_competition_does_not_exist(self, client, testing_data):
         """
@@ -198,7 +199,8 @@ class TestBook():
         club_name = testing_data['clubs'][0]['name']
         response = client.get('/book/' + competition_name + '/' + club_name)
         data = response.data.decode()
-        assert ("Something went wrong-please try again") in data
+        assert response.status_code == 200
+        assert ("Error: competition not found") in data
 
 
 class TestPurchasePlaces():

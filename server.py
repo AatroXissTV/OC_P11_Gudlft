@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.4"
+__version__ = "0.2.5"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -92,17 +92,26 @@ def show_summary():
 
 @app.route('/book/<competition>/<club>')
 def book(competition, club):
-    found_club = [c for c in clubs if c['name'] == club][0]
-    found_competition = [c for c in competitions if c['name'] == competition][0]  # noqa
-    if found_club and found_competition:
+    try:
+        found_club = [c for c in clubs if c['name'] == club][0]
+    except IndexError:
+        flash('Error: club not found')
+        return render_template('index.html')
+    try:
+        found_comp = [c for c in competitions if c['name'] == competition][0]
+    except IndexError:
+        flash('Error: competition not found')
+        return render_template('index.html')
+
+    if found_comp and found_club:
         return render_template(
             'booking.html',
-            club=found_club,
-            competition=found_competition
+            competition=found_comp,
+            club=found_club
         )
     else:
-        flash("Something went wrong-please try again")
-        return render_template(
+        flash('Something went wrong')
+        return redirect(
             'welcome.html',
             club=club,
             competitions=competitions
