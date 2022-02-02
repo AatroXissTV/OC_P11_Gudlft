@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.7"
+__version__ = "0.2.8"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -38,15 +38,33 @@ from flask import (
 # constants
 PATH_CLUBS = 'clubs.json'
 PATH_COMPETITIONS = 'competitions.json'
+POINTS_PER_PLACE = 1
+MAX_PER_CLUB = 12
 
 
 def load_clubs():
+    """
+    Loads club's data from the json file.
+    As the app is an MVP we do not need to use a database.
+    Data is not saved in the json file.
+    Everytime the app is run, the json file is reloaded.
+
+    :return: list_of_clubs which is the list of clubs in the JSON file.
+    """
     with open(PATH_CLUBS) as c:
         list_of_clubs = json.load(c)['clubs']
         return list_of_clubs
 
 
 def load_competitions():
+    """
+    Loads competitions's data from the json file.
+    As the app is an MVP we do not need to use a database.
+    Data is not saved in the json file.
+    Everytime the app is run, the json file is reloaded.
+
+    :return: list_of_competitions which is in the JSON file.
+    """
     with open(PATH_COMPETITIONS) as comps:
         list_of_competitions = json.load(comps)['competitions']
         return list_of_competitions
@@ -61,15 +79,24 @@ app.secret_key = 'something_special'
 
 @app.route('/')
 def index():
+    """
+    Route for index page.
+    Asks the user mail to login.
+    Mail must be valid and be a part of the club's list.
+
+    :return: index.html
+    """
     return render_template('index.html')
 
 
 @app.route('/showSummary', methods=['POST'])
 def show_summary():
     """
-    Allow user to login in the site if the email is in the database
+    Route for the summary page.
+    Shows email of logged in user and list of competitions.
+    If not, the user is redirected to the index page.
 
-    :return: Ok if the email is in the DB, else throw an error
+    :return: summary.html
     """
 
     email = request.form['email']
@@ -92,6 +119,19 @@ def show_summary():
 
 @app.route('/book/<competition>/<club>')
 def book(competition, club):
+    """"
+    Route for the book page.
+    This page allows the user to book a place in the selected competition.
+    Booking shouldn't be allowed if:
+        - competition occurs in the past
+        - the club from url is not in the club's list
+        - the competition from url is not in the competition's list
+
+    :param competition: competition's name
+    :param club: club's name
+    :return: booking.html
+    """
+
     try:
         found_club = [c for c in clubs if c['name'] == club][0]
     except IndexError:
@@ -120,11 +160,28 @@ def book(competition, club):
 
 @app.route('/purchasePlaces', methods=['POST'])
 def purchase_places():
+    """
+    Route for the purchase places page.
+    Check if the place reservation is possible.
+    The constraints are:
+        - the club must have enough places
+        - the competition must not be in the past
+        - the club cannot book more than 12 places
+        - the competition has a number of places left > 0
+
+    If the constraints are respected, the place is booked.
+    The system performs modficiation of the data.
+    A message is flashed in the template to inform the user.
+    Using POINTS_PER_PLACE constants.
+
+    :return: welcome.html
+    """
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]  # noqa
     club = [c for c in clubs if c['name'] == request.form['club']][0]
     places_required = int(request.form['places'])
     places_remaining = int(competition['numberOfPlaces'])
-    if places_required > int(club['points']):
+
+    if places_required > (int(club['points']) / POINTS_PER_PLACE):
         flash('Error: you do not have enough points')
         return render_template(
             'booking.html',
@@ -145,7 +202,7 @@ def purchase_places():
             club=club,
             competition=competition
         )
-    elif places_required > 12:
+    elif places_required > MAX_PER_CLUB:
         flash('Error: you cannot book more than 12 places')
         return render_template(
             'booking.html',
@@ -153,9 +210,10 @@ def purchase_places():
             competition=competition
         )
     else:
-        competition['numberOfPlaces'] = int(competition['numberOfPlaces'])-places_required  # noqa
         flash('Great-booking complete!')
-        club['points'] = int(club['points'])-places_required
+        flash('You have booked {} places'.format(places_required))
+        club['points'] = int(club['points']) - (places_required * POINTS_PER_PLACE)  # noqa
+        competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - places_required  # noqa
         return render_template(
             'welcome.html',
             club=club,
@@ -165,6 +223,12 @@ def purchase_places():
 
 @app.route('/clubsBoard', methods=['GET'])
 def clubs_board():
+    """
+    Route clubsBoard, which show a table of all clubs and there points.
+    This page is public.
+
+    :return: clubsBoard.html
+    """
     return render_template(
         'clubsBoard.html',
         clubs=clubs
@@ -173,4 +237,10 @@ def clubs_board():
 
 @app.route('/logout')
 def logout():
+    """
+    ROute for logout.
+    the redirection breaks the session.
+
+    :return: index.html
+    """
     return redirect(url_for('index'))
