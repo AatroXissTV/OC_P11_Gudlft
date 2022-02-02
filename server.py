@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.5"
+__version__ = "0.2.6"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -163,7 +163,12 @@ def purchase_places():
         )
 
 
-# TODO: Add route for points display
+@app.route('/clubsBoard')
+def clubs_board():
+    return render_template(
+        'clubsBoard.html',
+        clubs=clubs
+    )
 
 
 @app.route('/logout')
