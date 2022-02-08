@@ -13,7 +13,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.13"
+__version__ = "0.2.14"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -249,6 +249,27 @@ class TestPurchasePlaces():
         )
         assert response.status_code == 200
         assert ("Error: you cannot book more than 12 places") in response.data.decode()  # noqa
+
+    def test_sp_book_negative_value(self, client, testing_data):
+        """
+        Test to book a negative value of places
+        we know that because the page contains the error message
+        Error: you cannot book a negative value
+        """
+
+        competition_name = testing_data['competitions'][1]['name']
+        club_name = testing_data['clubs'][3]['name']
+
+        response = client.post(
+            '/purchasePlaces',
+            data={
+                'places': '-1',
+                'competition': competition_name,
+                'club': club_name
+            }
+        )
+        assert response.status_code == 200
+        assert ("Error: you cannot book a negative value") in response.data.decode()  # noqa
 
     def test_sp_book_no_places_available(self, client, testing_data):
         """
