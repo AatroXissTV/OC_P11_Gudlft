@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.11"
+__version__ = "0.2.15"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -195,6 +195,15 @@ def purchase_places():
     # check places
     places_required = int(request.form['places'])
     places_remaining = int(competition['numberOfPlaces'])
+
+    # Validators
+    if places_required < 0:
+        flash('Error: you cannot book a negative value')
+        return render_template(
+            'booking.html',
+            club=club,
+            competition=competition
+        )
 
     # first check if the club has enough places
     if places_required > (int(club['points']) / POINTS_PER_PLACE):
