@@ -13,7 +13,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.11"
+__version__ = "0.2.12"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -24,6 +24,7 @@ __status__ = "Development"
 
 # local application imports
 import server
+from server import POINTS_PER_PLACE
 
 # other imports
 
@@ -315,14 +316,18 @@ class TestPurchasePlaces():
         response = client.post(
             '/purchasePlaces',
             data={
-                'places': club_points - 1,
+                'places': int((club_points / POINTS_PER_PLACE)) - 1,
                 'competition': competition_name,
                 'club': club_name
             }
         )
+        places_bought = int((club_points / POINTS_PER_PLACE)) - 1
+        number_of_places = places_bought * POINTS_PER_PLACE
+        places_remaining = club_points - number_of_places  # noqa
+
         assert response.status_code == 200
         assert ("Great-booking complete!") in response.data.decode()
-        assert ('Points available: 1') in response.data.decode()
+        assert (f'Points available: {places_remaining}') in response.data.decode()  # noqa
 
 
 class TestLogout():
