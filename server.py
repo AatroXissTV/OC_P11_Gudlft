@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.8"
+__version__ = "0.2.9"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -38,7 +38,7 @@ from flask import (
 # constants
 PATH_CLUBS = 'clubs.json'
 PATH_COMPETITIONS = 'competitions.json'
-POINTS_PER_PLACE = 1
+POINTS_PER_PLACE = 3
 MAX_PER_CLUB = 12
 
 
