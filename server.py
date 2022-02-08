@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.10"
+__version__ = "0.2.11"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -181,6 +181,7 @@ def purchase_places():
     places_required = int(request.form['places'])
     places_remaining = int(competition['numberOfPlaces'])
 
+    # check if the competition is in the past
     if datetime.now() > datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S'):  # noqa
         flash('Error: you can not book a place for past competitions')
         return render_template(
@@ -188,22 +189,32 @@ def purchase_places():
             club=club,
             competition=competition
         )
-    elif places_required > (int(club['points']) / POINTS_PER_PLACE):
-        flash('Error: you do not have enough points')
+    else:
+        pass
+
+    # check places
+    places_required = int(request.form['places'])
+    places_remaining = int(competition['numberOfPlaces'])
+
+    # first check if the club has enough places
+    if places_required > (int(club['points']) / POINTS_PER_PLACE):
+        flash('Error: you do not have enough points (places are x{})'.format(POINTS_PER_PLACE))  # noqa}')
         return render_template(
             'booking.html',
             club=club,
             competition=competition
         )
-    elif places_required > places_remaining:
-        flash('Error: there are not enough places available')
-        return render_template(
-            'booking.html',
-            club=club,
-            competition=competition
-        )
+    # then check if the club tries to book more than 12 places
     elif places_required > MAX_PER_CLUB:
         flash('Error: you cannot book more than 12 places')
+        return render_template(
+            'booking.html',
+            club=club,
+            competition=competition
+        )
+    # finally check if the competitition has places left
+    elif places_required > places_remaining:
+        flash('Error: there are not enough places available')
         return render_template(
             'booking.html',
             club=club,
