@@ -13,7 +13,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.12"
+__version__ = "0.2.13"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -259,17 +259,16 @@ class TestPurchasePlaces():
         because the page contains the error message
         Error: there are no places available
         """
-
         competition_name = testing_data['competitions'][1]['name']
-        club_name = testing_data['clubs'][0]['name']
-        club_name2 = testing_data['clubs'][1]['name']
+        club_name = testing_data['clubs'][2]['name']
+        club2_name = testing_data['clubs'][3]['name']
 
         client.post(
             '/purchasePlaces',
             data={
                 'places': '2',
                 'competition': competition_name,
-                'club': club_name2
+                'club': club_name
             }
         )
 
@@ -278,9 +277,10 @@ class TestPurchasePlaces():
             data={
                 'places': '12',
                 'competition': competition_name,
-                'club': club_name
+                'club': club2_name
             }
         )
+
         assert response.status_code == 200
         assert ("Error: there are not enough places available") in response.data.decode()  # noqa
 
