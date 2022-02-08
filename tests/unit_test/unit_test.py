@@ -13,7 +13,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.11"
+__version__ = "0.2.14"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -24,6 +24,7 @@ __status__ = "Development"
 
 # local application imports
 import server
+from server import POINTS_PER_PLACE
 
 # other imports
 
@@ -249,6 +250,27 @@ class TestPurchasePlaces():
         assert response.status_code == 200
         assert ("Error: you cannot book more than 12 places") in response.data.decode()  # noqa
 
+    def test_sp_book_negative_value(self, client, testing_data):
+        """
+        Test to book a negative value of places
+        we know that because the page contains the error message
+        Error: you cannot book a negative value
+        """
+
+        competition_name = testing_data['competitions'][1]['name']
+        club_name = testing_data['clubs'][3]['name']
+
+        response = client.post(
+            '/purchasePlaces',
+            data={
+                'places': '-1',
+                'competition': competition_name,
+                'club': club_name
+            }
+        )
+        assert response.status_code == 200
+        assert ("Error: you cannot book a negative value") in response.data.decode()  # noqa
+
     def test_sp_book_no_places_available(self, client, testing_data):
         """
         Test  that a user cannot book more than the number
@@ -258,17 +280,16 @@ class TestPurchasePlaces():
         because the page contains the error message
         Error: there are no places available
         """
-
         competition_name = testing_data['competitions'][1]['name']
-        club_name = testing_data['clubs'][0]['name']
-        club_name2 = testing_data['clubs'][1]['name']
+        club_name = testing_data['clubs'][2]['name']
+        club2_name = testing_data['clubs'][3]['name']
 
         client.post(
             '/purchasePlaces',
             data={
                 'places': '2',
                 'competition': competition_name,
-                'club': club_name2
+                'club': club_name
             }
         )
 
@@ -277,9 +298,10 @@ class TestPurchasePlaces():
             data={
                 'places': '12',
                 'competition': competition_name,
-                'club': club_name
+                'club': club2_name
             }
         )
+
         assert response.status_code == 200
         assert ("Error: there are not enough places available") in response.data.decode()  # noqa
 
@@ -315,14 +337,18 @@ class TestPurchasePlaces():
         response = client.post(
             '/purchasePlaces',
             data={
-                'places': club_points - 1,
+                'places': int((club_points / POINTS_PER_PLACE)) - 1,
                 'competition': competition_name,
                 'club': club_name
             }
         )
+        places_bought = int((club_points / POINTS_PER_PLACE)) - 1
+        number_of_places = places_bought * POINTS_PER_PLACE
+        places_remaining = club_points - number_of_places  # noqa
+
         assert response.status_code == 200
         assert ("Great-booking complete!") in response.data.decode()
-        assert ('Points available: 1') in response.data.decode()
+        assert (f'Points available: {places_remaining}') in response.data.decode()  # noqa
 
 
 class TestLogout():
