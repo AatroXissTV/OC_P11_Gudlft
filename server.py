@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.9"
+__version__ = "0.2.10"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -164,8 +164,8 @@ def purchase_places():
     Route for the purchase places page.
     Check if the place reservation is possible.
     The constraints are:
-        - the club must have enough places
         - the competition must not be in the past
+        - the club must have enough places
         - the club cannot book more than 12 places
         - the competition has a number of places left > 0
 
@@ -181,15 +181,15 @@ def purchase_places():
     places_required = int(request.form['places'])
     places_remaining = int(competition['numberOfPlaces'])
 
-    if places_required > (int(club['points']) / POINTS_PER_PLACE):
-        flash('Error: you do not have enough points')
+    if datetime.now() > datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S'):  # noqa
+        flash('Error: you can not book a place for past competitions')
         return render_template(
             'booking.html',
             club=club,
             competition=competition
         )
-    elif datetime.now() > datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S'):  # noqa
-        flash('Error: you can not book a place for past competitions')
+    elif places_required > (int(club['points']) / POINTS_PER_PLACE):
+        flash('Error: you do not have enough points')
         return render_template(
             'booking.html',
             club=club,
