@@ -59,6 +59,11 @@ def testing_data(mocker):
         {   "name":"She Lifts",
             "email": "kate@shelifts.co.uk",
             "points":"12"
+        },
+        {
+            "name":"Test Club (many places)",
+            "email": "testclub@club.com",
+            "points":"500"
         }
         ]
         }"""

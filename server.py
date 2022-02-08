@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.8"
+__version__ = "0.2.11"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -38,7 +38,7 @@ from flask import (
 # constants
 PATH_CLUBS = 'clubs.json'
 PATH_COMPETITIONS = 'competitions.json'
-POINTS_PER_PLACE = 1
+POINTS_PER_PLACE = 3
 MAX_PER_CLUB = 12
 
 
@@ -164,8 +164,8 @@ def purchase_places():
     Route for the purchase places page.
     Check if the place reservation is possible.
     The constraints are:
-        - the club must have enough places
         - the competition must not be in the past
+        - the club must have enough places
         - the club cannot book more than 12 places
         - the competition has a number of places left > 0
 
@@ -181,29 +181,40 @@ def purchase_places():
     places_required = int(request.form['places'])
     places_remaining = int(competition['numberOfPlaces'])
 
-    if places_required > (int(club['points']) / POINTS_PER_PLACE):
-        flash('Error: you do not have enough points')
-        return render_template(
-            'booking.html',
-            club=club,
-            competition=competition
-        )
-    elif datetime.now() > datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S'):  # noqa
+    # check if the competition is in the past
+    if datetime.now() > datetime.strptime(competition['date'], '%Y-%m-%d %H:%M:%S'):  # noqa
         flash('Error: you can not book a place for past competitions')
         return render_template(
             'booking.html',
             club=club,
             competition=competition
         )
-    elif places_required > places_remaining:
-        flash('Error: there are not enough places available')
+    else:
+        pass
+
+    # check places
+    places_required = int(request.form['places'])
+    places_remaining = int(competition['numberOfPlaces'])
+
+    # first check if the club has enough places
+    if places_required > (int(club['points']) / POINTS_PER_PLACE):
+        flash('Error: you do not have enough points (places are x{})'.format(POINTS_PER_PLACE))  # noqa}')
         return render_template(
             'booking.html',
             club=club,
             competition=competition
         )
+    # then check if the club tries to book more than 12 places
     elif places_required > MAX_PER_CLUB:
         flash('Error: you cannot book more than 12 places')
+        return render_template(
+            'booking.html',
+            club=club,
+            competition=competition
+        )
+    # finally check if the competitition has places left
+    elif places_required > places_remaining:
+        flash('Error: there are not enough places available')
         return render_template(
             'booking.html',
             club=club,

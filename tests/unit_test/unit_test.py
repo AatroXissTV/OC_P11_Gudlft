@@ -13,7 +13,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.5"
+__version__ = "0.2.11"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -236,7 +236,7 @@ class TestPurchasePlaces():
         """
 
         competition_name = testing_data['competitions'][1]['name']
-        club_name = testing_data['clubs'][0]['name']
+        club_name = testing_data['clubs'][3]['name']
 
         response = client.post(
             '/purchasePlaces',
