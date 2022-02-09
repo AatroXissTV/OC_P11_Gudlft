@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.16"
+__version__ = "0.2.17"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -89,4 +89,29 @@ def test_hp_complete_path():
     assert 'GUDLFT Registration' in driver.title
 
     # Close the browser
+    driver.quit()
+
+
+def test_sp_login_path():
+    """
+    Test a path where the user try to login with a wrong email.
+    """
+
+    # configs
+    driver = webdriver.Chrome(service=SERVICE)
+
+    # Get index page
+    driver.get('http://127.0.0.1:5000/')
+    driver.implicitly_wait(2)
+
+    # Login with a user
+    email = "wrong@email.com"
+    login = driver.find_element(By.NAME, 'email')
+    login.send_keys(email)
+    login.submit()
+    driver.implicitly_wait(2)
+
+    # Verify if the user is logged in
+    assert 'GUDLFT Registration' in driver.title
+
     driver.quit()
