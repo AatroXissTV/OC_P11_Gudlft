@@ -1,6 +1,6 @@
 # server.py
 # created 27/01/2021 at 10:50 by Antoine 'AatroXiss' BEAUDESSON
-# last modified 25/01/2021 at 10:50 by Antoine 'AatroXiss' BEAUDESSON
+# last modified 10/02/2022 at 10:50 by Antoine 'AatroXiss' BEAUDESSON
 
 """ server.py
 
@@ -12,7 +12,7 @@ __author__ = "Antoine 'AatroXiss' BEAUDESSON"
 __copyright__ = "Copyright 2021, Antoine 'AatroXiss' BEAUDESSON"
 __credits__ = ["Antoine 'AatroXiss' BEAUDESSON"]
 __license__ = ""
-__version__ = "0.2.15"
+__version__ = "0.2.18"
 __maintainer__ = "Antoine 'AatroXiss' BEAUDESSON"
 __email__ = "antoine.beaudesson@gmail.com"
 __status__ = "Development"
@@ -207,7 +207,7 @@ def purchase_places():
 
     # first check if the club has enough places
     if places_required > (int(club['points']) / POINTS_PER_PLACE):
-        flash('Error: you do not have enough points (places are x{})'.format(POINTS_PER_PLACE))  # noqa}')
+        flash('Error: you do not have enough points (places are x{})'.format(POINTS_PER_PLACE))  # noqa
         return render_template(
             'booking.html',
             club=club,
